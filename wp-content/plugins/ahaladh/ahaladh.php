@@ -13,10 +13,9 @@
  */
 
 /*
-  Two 
-
+  Registering wp custom routes
 */
-require_once(ABSPATH . 'wp-admin/includes/file.php');
+
 add_action('rest_api_init', function () {
   register_rest_route( 'wp-content/plugins', 'ahaladh/api.php',array(
                 'methods'  => 'GET',
@@ -26,9 +25,11 @@ add_action('rest_api_init', function () {
 
 function wc_rest_ahaladh_handler( $data ) {
 
- 
+  /*
+     wordpress information 
+  */
 	if( isset( $_GET['m'] ) && $_GET['m'] == 'wp-info' ){
-
+      require_once(ABSPATH . 'wp-admin/includes/file.php');
       $wp_infos = array();
       $wp_infos['site_name'] = get_bloginfo();
       $wp_infos['site_url']  = get_bloginfo('url');
@@ -36,28 +37,32 @@ function wc_rest_ahaladh_handler( $data ) {
       $wp_infos['wp_content_absolute_path']  = content_url();
       $fi = new FilesystemIterator(get_home_path(), FilesystemIterator::SKIP_DOTS);
       $wp_infos['files_count']  = iterator_count($fi);
-	  return new WP_REST_Response( wp_send_json( $wp_infos ) );
 
-    }
-    if( isset( $_GET['m'] ) && $_GET['m'] == 'db-info' ){
+	    return new WP_REST_Response( wp_send_json( $wp_infos ) );
 
-      global $wpdb;
+  }
+
+  /*
+     database information 
+  */
+  if( isset( $_GET['m'] ) && $_GET['m'] == 'db-info' ){
+
+    global $wpdb;
 
     $sql = "SHOW TABLES";
-	$results = $wpdb->get_results($sql);
+  	$results = $wpdb->get_results($sql);
 
-	$table_data = array();
+  	$table_data = array();
 
-	foreach($results as $index => $value) {
-	    foreach($value as $tableName) {
-	    	$rowcount = $wpdb->get_var("SELECT COUNT(*) FROM $tableName");
-	        $table_data[$tableName] = array( 'records' => $rowcount );
-	    }
-	}
-    
-    $table_datas = array('tables' => $table_data );
-	return new WP_REST_Response( wp_send_json( $table_datas ) );
+  	foreach($results as $index => $value) {
+  	    foreach($value as $tableName) {
+  	    	$rowcount = $wpdb->get_var("SELECT COUNT(*) FROM $tableName");
+  	        $table_data[$tableName] = array( 'records' => $rowcount );
+  	    }
+  	}
+      
+      $table_datas = array('tables' => $table_data );
+  	return new WP_REST_Response( wp_send_json( $table_datas ) );
 
-    }
-  // return $data['m'];
+  }
 }
